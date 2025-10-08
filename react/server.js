@@ -45,21 +45,23 @@ app.use('*all', async (req, res) => {
       // Always read fresh template in development
       template = await fs.readFile('./index.html', 'utf-8')
       template = await vite.transformIndexHtml(url, template)
-      // TODO: Load the server entry module and get the render function
-      // Hint: Use vite.ssrLoadModule() to load '/src/entry-server.jsx' — https://vite.dev/guide/ssr.html
-      render = null // Replace this line
+      // Load the server entry module and get the render function
+      const serverEntry = await vite.ssrLoadModule('/src/entry-server.jsx')
+      render = serverEntry.render
     } else {
       template = templateHtml
-      // TODO: Import the built server entry module and get the render function
-      // Hint: Use a dynamic import() to load the built server entry from ./dist/server/
-      render = null // Replace this line
+      // Import the built server entry module and get the render function
+      const serverEntry = await import('./dist/server/entry-server.js')
+      render = serverEntry.render
     }
 
-    // TODO: Call the render function with the URL to get the rendered content
-    const rendered = null // Replace this line
+    // Call the render function with the URL to get the rendered content
+    const rendered = render(url)
 
-    // TODO: Replace the placeholders in the HTML template with the rendered content
+    // Replace the placeholders in the HTML template with the rendered content
     const html = template
+      .replace('<!--ssr-outlet-->', rendered.html)
+      .replace('<!--ssr-head-->', '')
 
     res.status(200).set({ 'Content-Type': 'text/html' }).send(html)
   } catch (e) {
@@ -73,3 +75,4 @@ app.use('*all', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server started at http://localhost:${port}`)
 })
+ 
