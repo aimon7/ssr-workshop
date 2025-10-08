@@ -61,7 +61,7 @@ app.use('*all', async (req, res) => {
     // Replace the placeholders in the HTML template with the rendered content
     const html = template
       .replace('<!--ssr-outlet-->', rendered.html)
-      .replace('<!--ssr-head-->', '')
+      .replace('<!--ssr-head-->', rendered.head)
 
     res.status(200).set({ 'Content-Type': 'text/html' }).send(html)
   } catch (e) {
